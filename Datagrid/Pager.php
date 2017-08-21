@@ -19,7 +19,7 @@ use Sonata\AdminBundle\Datagrid\Pager as BasePager;
  *
  * @author Jonathan H. Wage <jonwage@gmail.com>
  */
-class Pager extends BasePager
+class Pager extends BasePager implements SimpleQueryPagerInterface
 {
     /**
      * NEXT_MAJOR: remove this property.
@@ -27,6 +27,23 @@ class Pager extends BasePager
      * @deprecated This property is deprecated since version 2.4 and will be removed in 3.0
      */
     protected $queryBuilder = null;
+
+    /**
+     * @var bool
+     */
+    protected $simpleQueryEnabled = false;
+
+    /**
+     * If set to true, the generated query will not contain any duplicate identifier check (e.g. DISTINCT keyword).
+     * Enabling simple qurery will improve query performance, but can also return duplicate items. It depends on the query and the database schema.
+     * Please enable the simple query only if you are sure that the duplicate identifier check in the query is useless.
+     *
+     * @param bool $simpleQueryEnabled
+     */
+    public function setSimpleQueryEnabled($simpleQueryEnabled)
+    {
+        $this->simpleQueryEnabled = (bool) $simpleQueryEnabled;
+    }
 
     /**
      * {@inheritdoc}
@@ -39,8 +56,14 @@ class Pager extends BasePager
             $countQuery->setParameters($this->getParameters());
         }
 
+        $distinct = '';
+        if (!$this->simpleQueryEnabled) {
+            $distinct = 'DISTINCT ';
+        }
+
         $countQuery->select(sprintf(
-            'count(DISTINCT %s.%s) as cnt',
+            'count(%s%s.%s) as cnt',
+            $distinct,
             $countQuery->getRootAlias(),
             current($this->getCountColumn())
         ));

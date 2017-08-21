@@ -48,6 +48,11 @@ class ProxyQuery implements ProxyQueryInterface
     protected $entityJoinAliases;
 
     /**
+     * @var bool
+     */
+    protected $simpleQueryEnabled;
+
+    /**
      * @param QueryBuilder $queryBuilder
      */
     public function __construct($queryBuilder)
@@ -55,6 +60,19 @@ class ProxyQuery implements ProxyQueryInterface
         $this->queryBuilder = $queryBuilder;
         $this->uniqueParameterId = 0;
         $this->entityJoinAliases = array();
+        $this->simpleQueryEnabled = false;
+    }
+
+    /**
+     * If set to true, the generated query will not contain any duplicate identifier check (e.g. DISTINCT keyword).
+     * Enabling simple qurery will improve query performance, but can also return duplicate items. It depends on the query and the database schema.
+     * Please enable the simple query only if you are sure that the duplicate identifier check in the query is useless.
+     *
+     * @param bool $simpleQueryEnabled
+     */
+    public function setSimpleQueryEnabled($simpleQueryEnabled)
+    {
+        $this->simpleQueryEnabled = $simpleQueryEnabled;
     }
 
     /**
@@ -310,7 +328,8 @@ class ProxyQuery implements ProxyQueryInterface
             $idxSelect .= ($idxSelect !== '' ? ', ' : '').$idSelect;
         }
         $queryBuilderId->resetDQLPart('select');
-        $queryBuilderId->add('select', 'DISTINCT '.$idxSelect);
+        $distinct = (!$this->simpleQueryEnabled) ? 'DISTINCT ' : '';
+        $queryBuilderId->add('select', $distinct.$idxSelect);
 
         // for SELECT DISTINCT, ORDER BY expressions must appear in idxSelect list
         /* Consider
