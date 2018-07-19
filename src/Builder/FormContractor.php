@@ -18,6 +18,7 @@ use Sonata\AdminBundle\Builder\FormContractorInterface;
 use Sonata\AdminBundle\Form\Type\AdminType;
 use Sonata\AdminBundle\Form\Type\ModelAutocompleteType;
 use Sonata\AdminBundle\Form\Type\ModelHiddenType;
+use Sonata\AdminBundle\Form\Type\ModelLinkType;
 use Sonata\AdminBundle\Form\Type\ModelListType;
 use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\AdminBundle\Form\Type\ModelTypeList;
@@ -181,6 +182,16 @@ class FormContractor implements FormContractorInterface
                     return $fieldDescription->getAssociationAdmin()->getNewInstance();
                 },
             ];
+        // NEXT_MAJOR: Check only against FQCNs when dropping support for Symfony 2.8
+        } elseif ('sonata_type_model_link' === $type || $this->checkFormClass($type, [ModelLinkType::class])) {
+            if (!$fieldDescription->getAssociationAdmin()) {
+                throw new \RuntimeException(sprintf(
+                    'The current field `%s` is not linked to an admin.'
+                    .' Please define `admin_code` field description option.',
+                    $fieldDescription->getName(),
+                    $fieldDescription->getTargetEntity()
+                ));
+            }
         }
 
         return $options;

@@ -149,6 +149,26 @@ file that was distributed with this source code.
     {% include '@SonataAdmin/CRUD/Association/edit_many_script.html.twig' %}
 {% endblock %}
 
+{% block sonata_type_model_link_widget %}
+<span id="field_actions_{{ id }}" class="field-actions">
+    <span class="btn-group">
+        {% if sonata_admin.field_description.associationAdmin.hasroute('edit')
+            and sonata_admin.field_description.associationAdmin.isGranted('EDIT')
+            and btn_edit
+            and sonata_admin.field_description.associationAdmin.id(sonata_admin.value) != null
+        %}
+            <a  href="{{ sonata_admin.field_description.associationAdmin.generateObjectUrl('edit', sonata_admin.value) }}"
+                class="btn btn-warning btn-sm sonata-ba-action"
+                title="{{ btn_edit|trans({}, btn_catalogue) }}"
+            >
+                <i class="fa fa-pencil"></i>
+                {{ btn_edit|trans({}, btn_catalogue) ~ ' id: ' ~ sonata_admin.field_description.associationAdmin.id(sonata_admin.value) }}
+            </a>
+        {% endif %}
+    </span>
+</span>
+{% endblock %}
+
 {% block sonata_type_admin_widget %}
     {#admin {{ sonata_admin.field_description.mappingtype }}#}
     {% if sonata_admin.field_description.mappingtype == constant('Doctrine\\ORM\\Mapping\\ClassMetadataInfo::ONE_TO_ONE') %}
